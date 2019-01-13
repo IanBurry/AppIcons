@@ -10,7 +10,13 @@ import Cocoa
 import os.log
 
 class Scaler {
-    
+
+    /**
+     Create as CGSize object from dimensions string
+
+     - Parameter sizeString: dimensions string like '32x32'
+     - Returns: CGSize object with width and height
+     */
     class func cgSizeFromWxHString(_ sizeString: String) -> CGSize? {
         let dimensions = sizeString.split(separator: Character("x")).map { Int($0) }
         guard let w = dimensions.first!, let h = dimensions.last! else {
@@ -22,9 +28,13 @@ class Scaler {
     
     /**
      dimensionsFromWxHString
-     
+
      Given a valid dimension string and scale factor, returns a tuple containing
      integer width and height
+     
+     - Parameter sizeString: dimensions as a String. Like '32x32'
+     - Parameter scale: Integer scaling factor. Defaults to 1
+     - Returns: Tuple of integer width and height
     */
     class func dimensionsFromWxHString(_ sizeString: String, scale: Int = 1) -> (width: Int, height: Int)? {
         let dimensions = sizeString.split(separator: Character("x")).map { Int($0) }
@@ -71,7 +81,7 @@ class Scaler {
     
     /**
       imageCGScale
-     
+
       Scales image using Core Graphics. Scales to provided height and width.
       Does not handle enlarging images
      */
@@ -99,7 +109,7 @@ class Scaler {
     
     /**
       imageIOScale
-     
+
       Performs scaling using Image I/O. This is pretty simple to implement.
       Needs to be made fully functional
      */
