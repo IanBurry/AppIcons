@@ -9,7 +9,7 @@ A simple Mac OS application for creating all the app icons required by Mac OS an
 * Build and run
 
 ## Known Issues
-* Does not currently work on IOS projects
+* Allows non-square source images.
 
 ## TODO
-* Fix the IOS project bug
+* Disallow or crop non-square source images
