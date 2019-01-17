@@ -1,5 +1,5 @@
 # AppIcons
-A simple Mac OS application for creating all the app icons required by Mac OS and IOS apps
+A simple Mac OS application for creating all the app icons required by Mac OS and IOS apps  
 See changelog: https://github.com/IanBurry/AppIcons/wiki#change-log
 
 ## Getting Started
