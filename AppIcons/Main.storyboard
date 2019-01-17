@@ -373,7 +373,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Images" customModuleProvider="target">
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="AppIcons" customModuleProvider="target">
                     <connections>
                         <outlet property="showInfoViewMenuItem" destination="1UK-8n-QPP" id="xas-Fq-3sU"/>
                     </connections>
@@ -408,7 +408,7 @@
         <!--Icons View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="IconsViewController" customModule="Images" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="XfG-lQ-9wD" customClass="IconsViewController" customModule="AppIcons" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="529" height="605"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -423,7 +423,7 @@
                                     <action selector="saveButtonClicked:" target="XfG-lQ-9wD" id="uM4-Qc-FsM"/>
                                 </connections>
                             </button>
-                            <imageView canDrawConcurrently="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="no5-Fe-Lu3" customClass="DragNDropImageView" customModule="Images" customModuleProvider="target">
+                            <imageView canDrawConcurrently="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="no5-Fe-Lu3" customClass="DragNDropImageView" customModule="AppIcons" customModuleProvider="target">
                                 <rect key="frame" x="15" y="85" width="500" height="500"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="500" id="FnZ-1q-Kh9"/>

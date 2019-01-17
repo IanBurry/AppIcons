@@ -36,8 +36,8 @@ class Scaler {
      - Parameter scale: Integer scaling factor. Defaults to 1
      - Returns: Tuple of integer width and height
     */
-    class func dimensionsFromWxHString(_ sizeString: String, scale: Int = 1) -> (width: Int, height: Int)? {
-        let dimensions = sizeString.split(separator: Character("x")).map { Int($0) }
+    class func dimensionsFromWxHString(_ sizeString: String, scale: Double = 1.0) -> (width: Double , height: Double)? {
+        let dimensions = sizeString.split(separator: Character("x")).map { Double($0) }
         guard let w = dimensions.first!, let h = dimensions.last! else {
             os_log("Cannot extract dimensions from string: %@", sizeString)
             return nil
@@ -53,7 +53,7 @@ class Scaler {
       or width, but determines a scaling factor from a provided numeric dimension.
       Easily embiggens as well as ensmallens.
      */
-    class func imageCIScale(_ image: NSImage, dimension: Int) -> NSImage? {
+    class func imageCIScale(_ image: NSImage, dimension: Double) -> NSImage? {
         guard let data = image.tiffRepresentation,
             let filter = CIFilter(name: "CILanczosScaleTransform"),
             let ciImage = CIImage(data: data)

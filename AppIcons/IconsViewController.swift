@@ -200,7 +200,7 @@ class IconsViewController: NSViewController {
         var imageNames = [String]()
         let savePath = projectPath.appendingPathComponent(kAIIconAssetsPathComponents["directory"]!)
         for image in imagesJson {
-            if let theSize = Scaler.dimensionsFromWxHString(image["size"].stringValue, scale: image["scale"].intValue) {
+            if let theSize = Scaler.dimensionsFromWxHString(image["size"].stringValue, scale: image["scale"].doubleValue) {
                 let scaledImage = Scaler.imageCIScale(self.largeImage, dimension: theSize.height)
                 let imageName = String(format: "AppIcon%@-%@.png", image["size"].stringValue, image["scale"].stringValue)
                 self.saveAsPNG(scaledImage, name: savePath.appendingPathComponent(imageName))

@@ -32,9 +32,9 @@ class AppIconsTests: XCTestCase {
     */
     func test_cgSizeFromWxHStringReturnsCGSize() {
         let testStr = "16x16"
-        let expected = CGSize(width: 16, height: 16)
+        let expected = CGSize(width: 16.0, height: 16.0)
         let result = Scaler.cgSizeFromWxHString(testStr)
-        
+
         XCTAssertEqual(expected, result)
     }
 
@@ -58,7 +58,7 @@ class AppIconsTests: XCTestCase {
     */
     func test_dimensionsFromWxHStringReturnsDimensions() {
         let testStr = "32x32"
-        let expected = (width: 32, height: 32)
+        let expected = (width: 32.0, height: 32.0)
         let result = Scaler.dimensionsFromWxHString(testStr)
         
         XCTAssert(expected == result!)
@@ -66,8 +66,8 @@ class AppIconsTests: XCTestCase {
     
     func test_dimensionsFromWxHStringReturnsScaledDimensions() {
         let testStr = "32x32"
-        let scaleFactor = 2
-        let expected = (width: 64, height: 64)
+        let scaleFactor = 2.0
+        let expected = (width: 64.0, height: 64.0)
         let result = Scaler.dimensionsFromWxHString(testStr, scale: scaleFactor)
         
         XCTAssert(expected == result!)
@@ -104,7 +104,7 @@ class AppIconsTests: XCTestCase {
      Test that a correctly scaled image is returned using Core Image
      */
     func test_imageCIScaleReturnsScaledImage() {
-        let w = 1200, h = 1200
+        let w = 1200.0, h = 1200.0
         let result = Scaler.imageCIScale(image, dimension: h)
         let resultSize = result?.size
         
