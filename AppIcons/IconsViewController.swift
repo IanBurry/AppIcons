@@ -25,13 +25,14 @@ class IconsViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         appInfo["name"] = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
         appInfo["version"] = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
         
         infoView.wantsLayer = true
         infoView.layer?.backgroundColor = CGColor(gray: 0.2, alpha: 0.65)
     }
-    
+
     /**
      Load image from file and display
      
@@ -41,18 +42,15 @@ class IconsViewController: NSViewController {
     func loadImageFile() {
         view.window?.title = "Select Source Image File (JPEG or PNG)"
         let fileDialog = NSOpenPanel()
-        fileDialog.title = "Select an Image File (PNG, JPG)"
         fileDialog.allowedFileTypes = ["png", "jpg"]
         fileDialog.directoryURL = openFileLastPath
         fileDialog.beginSheetModal(for: view.window!, completionHandler: { (response: NSApplication.ModalResponse) in
              if response == .OK {
                 if let url = fileDialog.url, let image = NSImage(contentsOf: url) {
-                    self.scaleButton.isEnabled = true
-                    self.largeImage = image
-                    self.loadedImageView.image = image
-                    self.setupInfoView(name: fileDialog.url?.lastPathComponent, size: image.size)
+                    image.setName(url.lastPathComponent)
+                    self.checkImage(image)
                 } else {
-                    self.showAlert(
+                    self.showWarning(
                         message: "Unrecognized image file format",
                         info: "Image file not found, or is an unacceptable format. Allow formats are: PNG or JPEG"
                     )
@@ -61,10 +59,48 @@ class IconsViewController: NSViewController {
             
             self.view.window?.title = self.appInfo["name"]!
         })
-        
+
         openFileLastPath = fileDialog.directoryURL // is this needed anymore?
     }
-    
+
+    /**
+     Check loaded image is square (height == width)
+
+     Given a loaded image, checks dimensions for equality, and prompts to crop if unequal.
+     Sets the source image view's image property regardless, but will not enable the
+     'Install' button if image remains unsquare
+
+     - Parameter image: NSImage from image source file
+     */
+    func checkImage(_ image: NSImage?) {
+        guard let theImage = image else {
+            os_log("checkImage: No valid NSImage param")
+            return
+        }
+
+        loadedImageView.image = theImage
+        let imageSize = theImage.size
+        if imageSize.width != imageSize.height {
+            let cropAlert = NSAlert()
+            cropAlert.messageText = "Crop Source Image?"
+            cropAlert.informativeText = "Source image is not square. \(appInfo["name"]!) can crop it for you"
+            cropAlert.addButton(withTitle: "Crop Image")
+            cropAlert.addButton(withTitle: "Cancel")
+            cropAlert.beginSheetModal(for: view.window!) { (response: NSApplication.ModalResponse) in
+                if response == .alertFirstButtonReturn {
+                    self.loadedImageView.image = Scaler.imageCICrop(theImage)
+                    self.scaleButton.isEnabled = true
+                } else {
+                    self.scaleButton.isEnabled = false
+                }
+
+                self.setupInfoView(name: theImage.name(), size: theImage.size)
+            }
+        } else {
+            self.scaleButton.isEnabled = true
+        }
+    }
+
     /**
      Set up and display image information view
      
@@ -105,7 +141,7 @@ class IconsViewController: NSViewController {
                 guard let projectFileURL = saveDialog.url,
                     let json = self.getContentsJsonFromProject(projURL: projectFileURL)
                 else {
-                    self.showAlert(
+                    self.showWarning(
                         message: "Could not open Contents.json",
                         info: "Contents.json does not exist or could not be opened for project at path: \(saveDialog.url?.path ?? "N/A")"
                     )
@@ -120,7 +156,7 @@ class IconsViewController: NSViewController {
                     imageNames = self.makeScaledImages(sizesJson, projectPath: projectBaseURL)
                     self.buildContentsJsonFile(fileNames: imageNames, contentsJson: json, projectPath: projectBaseURL)
                 } else {
-                    self.showAlert(message: "No image metadata in JSON", info: "Contents.json does not contain any image metadata")
+                    self.showWarning(message: "No image metadata in JSON", info: "Contents.json does not contain any image metadata")
                 }
             }
             
@@ -232,11 +268,12 @@ class IconsViewController: NSViewController {
         }
     }
     
-    func showAlert(message: String, info: String, style: NSAlert.Style = .warning) {
+    func showWarning(message: String, info: String) {
         let alert = NSAlert()
         alert.messageText = message
         alert.informativeText = info
-        alert.alertStyle = style
+        alert.alertStyle = .warning
+
         alert.beginSheetModal(for: view.window!, completionHandler: nil)
     }
 
@@ -254,7 +291,6 @@ class IconsViewController: NSViewController {
             return
         }
         
-        scaleButton.isEnabled = true
         largeImage = theImage
         setupInfoView(name: sender.imageFileName, size: theImage.size)
     }

@@ -12,11 +12,13 @@ import XCTest
 class AppIconsTests: XCTestCase {
     var bundle : Bundle!
     var image : NSImage!
+    var tallImage: NSImage!
     
     override func setUp() {
         if bundle == nil || image == nil {
             bundle = Bundle(for: type(of: self))
             image = bundle.image(forResource: "TestImage")!
+            tallImage = bundle.image(forResource: "TestImageTall")
         }
     }
 
@@ -132,4 +134,8 @@ class AppIconsTests: XCTestCase {
         XCTAssert(resultSize == NSSize(width: w, height: h))
     }
 
+    func test_imageCICropReturnsCroppedImage() {
+        let result = Scaler.imageCICrop(tallImage)
+        XCTAssertEqual(result?.size.width, result!.size.height)
+    }
 }

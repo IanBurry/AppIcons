@@ -77,7 +77,40 @@ class Scaler {
         
         return NSImage(cgImage: scaledImage, size: NSZeroSize)
     }
-    
+
+    /**
+     Crop an image to make it square
+
+     Determine which dimension of the image needs to be adjusted,
+     and crop accordingly
+
+     - Parameter image: NSImage to be cropped
+     - Returns: Cropped NSImage
+     */
+    class func imageCICrop(_ image: NSImage) -> NSImage? {
+        guard let data = image.tiffRepresentation,
+            let filter = CIFilter(name: "CICrop"),
+            let ciImage = CIImage(data: data)
+        else {
+            os_log("Could not set up Core Image with provided args. Function: %@, line: %@", #function, #line)
+            return nil
+        }
+
+        let cropDimension = image.size.width < image.size.height ? image.size.width : image.size.height
+        let cropRect = CIVector(x: 0, y: 0, z: cropDimension, w: cropDimension) // this needs moar work
+        filter.setValue(ciImage, forKey: kCIInputImageKey)
+        filter.setValue(cropRect, forKey: "inputRectangle")
+
+        let context = CIContext()
+        guard let outputImage = filter.outputImage,
+              let croppedImage = context.createCGImage(outputImage, from: outputImage.extent)
+        else {
+            os_log("Could not create cropped CG Image at: %@, line: %@", #function, #line)
+            return nil
+        }
+
+        return NSImage(cgImage: croppedImage, size: NSZeroSize)
+    }
     
     /**
       imageCGScale
