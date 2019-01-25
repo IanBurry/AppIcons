@@ -420,7 +420,7 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="saveButtonClicked:" target="XfG-lQ-9wD" id="uM4-Qc-FsM"/>
+                                    <action selector="loadedImageViewAction:" target="XfG-lQ-9wD" id="uM4-Qc-FsM"/>
                                 </connections>
                             </button>
                             <imageView canDrawConcurrently="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="no5-Fe-Lu3" customClass="DragNDropImageView" customModule="AppIcons" customModuleProvider="target">
@@ -431,7 +431,7 @@
                                 </constraints>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="Large" id="yLc-PS-73q"/>
                                 <connections>
-                                    <action selector="largeImageViewAction:" target="XfG-lQ-9wD" id="124-kQ-Anx"/>
+                                    <action selector="loadedImageViewAction:" target="XfG-lQ-9wD" id="124-kQ-Anx"/>
                                 </connections>
                             </imageView>
                             <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bfo-6u-N8i">
@@ -496,7 +496,7 @@
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
                                         <connections>
-                                            <action selector="closeInfoViewClicked:" target="XfG-lQ-9wD" id="v8q-0t-T95"/>
+                                            <action selector="closeInfoViewClicked:" target="XfG-lQ-9wD" id="US3-XN-eQG"/>
                                         </connections>
                                     </button>
                                 </subviews>

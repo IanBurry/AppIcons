@@ -23,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         var result = true
-        if menuItem.action == #selector(toggleInfoView) && iconsVC.largeImage == nil {
+        if menuItem.action == #selector(toggleInfoView) && iconsVC.loadedImageView.image == nil {
             result = false
         }
         
@@ -35,7 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
     
     @IBAction func toggleInfoView(_ sender: Any) {
-        if iconsVC.largeImage != nil {
+        if iconsVC.loadedImageView.image != nil {
             iconsVC.infoView.isHidden = !iconsVC.infoView.isHidden
             showInfoViewMenuItem.title = iconsVC.infoView.isHidden ? "Show Info View" : "Hide Info View"
         }

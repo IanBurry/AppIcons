@@ -17,25 +17,25 @@ class IconsViewController: NSViewController {
     @IBOutlet weak var filenameLabel: NSTextField!
     @IBOutlet weak var fileFormatLabel: NSTextField!
     @IBOutlet weak var imageSizeLabel: NSTextField!
-    
+
     var appInfo = ["name": "", "version": ""]
-    var largeImage : NSImage!
     var openFileLastPath: URL?
     var saveFilesLastPath: URL?
-    
+    var sourceImageFilename = ""
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         appInfo["name"] = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
         appInfo["version"] = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-        
+
         infoView.wantsLayer = true
         infoView.layer?.backgroundColor = CGColor(gray: 0.2, alpha: 0.65)
     }
 
     /**
      Load image from file and display
-     
+
      Acquire file path from fileDialog and load image file. Show image file info view.
      Enable 'create and install icons'
      */
@@ -47,7 +47,7 @@ class IconsViewController: NSViewController {
         fileDialog.beginSheetModal(for: view.window!, completionHandler: { (response: NSApplication.ModalResponse) in
              if response == .OK {
                 if let url = fileDialog.url, let image = NSImage(contentsOf: url) {
-                    image.setName(url.lastPathComponent)
+                    self.sourceImageFilename = url.lastPathComponent
                     self.checkImage(image)
                 } else {
                     self.showWarning(
@@ -94,26 +94,28 @@ class IconsViewController: NSViewController {
                     self.scaleButton.isEnabled = false
                 }
 
-                self.setupInfoView(name: theImage.name(), size: theImage.size)
+                if let croppedImage = self.loadedImageView.image {
+                    self.setupInfoView()
+                }
             }
         } else {
+            if let loadedImage = self.loadedImageView.image {
+                self.setupInfoView()
+            }
+
             self.scaleButton.isEnabled = true
         }
     }
 
     /**
      Set up and display image information view
-     
-     - Parameter name: String file name
-     - Parameter size: Image size as NSSize object
      */
-    func setupInfoView(name: String?, size: NSSize) {
-        if let theName = name {
-            filenameLabel.stringValue = theName
-            fileFormatLabel.stringValue = theName.components(separatedBy: ".").last?.uppercased() ?? "N/A"
+    func setupInfoView() {
+        if let theSize = loadedImageView.image?.size {
+            filenameLabel.stringValue = sourceImageFilename
+            fileFormatLabel.stringValue = sourceImageFilename.components(separatedBy: ".").last?.uppercased() ?? "N/A"
+            imageSizeLabel.stringValue = String(format: "%.0f x %.0f", theSize.width, theSize.height)
         }
-        
-        imageSizeLabel.stringValue = String(format: "%.0f x %.0f", size.width, size.height)
 
         if let delegate = getAppDelegate() {
             if infoView.isHidden {
@@ -121,10 +123,10 @@ class IconsViewController: NSViewController {
             }
         }
     }
-    
+
     /**
      Create and install icon images in target project
-     
+
      Using the project or workspace path, create all icon image files from the information
      provided in the Contents.json file. Update Contents.json with icon image file names
      NOTE: This is doing too much. There should be two dialogs anyway. One for the target
@@ -147,9 +149,9 @@ class IconsViewController: NSViewController {
                     )
                     return
                 }
-                
+
                 let imagesAllJson = json["images"].array
-    
+
                 var imageNames : [String]
                 if let sizesJson = imagesAllJson {
                     let projectBaseURL = projectFileURL.deletingPathExtension()
@@ -159,14 +161,14 @@ class IconsViewController: NSViewController {
                     self.showWarning(message: "No image metadata in JSON", info: "Contents.json does not contain any image metadata")
                 }
             }
-            
+
             self.view.window?.title = self.appInfo["name"]!
         }
     }
-    
+
     /**
      Read in the Contents.json file
- 
+
      From the project path, read the appiconset contents.json file and return
      it as a JSON object
  
@@ -175,27 +177,27 @@ class IconsViewController: NSViewController {
      */
     func getContentsJsonFromProject(projURL: URL) -> JSON? {
         let urlBase = projURL.deletingPathExtension() // needed?
-        
+
         let components = kAIIconAssetsPathComponents
         let contentsPath = components["directory"]! + components["file"]!
         let contentsJsonURL = urlBase.appendingPathComponent(contentsPath)
-        
+
         guard FileManager.default.fileExists(atPath: contentsJsonURL.path),
             let fileContents = try? String(contentsOf: contentsJsonURL)
         else {
             os_log("Contents.json file does not exist at that path, or is unreadable")
             return nil
         }
-        
+
         return JSON(parseJSON: fileContents)
     }
-    
+
     /**
      Add icon image data and write Contents.json
-     
+
      Add the icon image filenames to the images section of contents.json
      and write to disk
-     
+
      - Parameter fileNames: Array of image file names
      - Parameter contentsJson: the full contents.json as JSON object
      - Parameter projectPath: the URL of the target project
@@ -205,12 +207,12 @@ class IconsViewController: NSViewController {
             for (index, _) in imagesJson.enumerated() {
                 imagesJson[index]["filename"].stringValue = fileNames[index]
             }
-            
+
             var theJson = contentsJson
             theJson["info"]["author"].stringValue = appInfo["name"] ?? "AppIcon"
             theJson["info"]["version"].stringValue = appInfo["version"] ?? "N/A"
             theJson["images"].arrayObject = imagesJson
-            
+
             let components = kAIIconAssetsPathComponents
             let contentsPath = components["directory"]! + components["file"]!
             let contentsJsonURL = projectPath.appendingPathComponent(contentsPath)
@@ -222,31 +224,36 @@ class IconsViewController: NSViewController {
             }
         }
     }
-    
+
     /**
      Create all Icon images
-     
+
      Create all app icon images specified in the Contents.json file
-     
+
      - Parameter imagesJson: Array of JSON image specifications
      - Parameter projectPath: URL of the target project or workspace
      - Returns: Array of String image file names
      */
     func makeScaledImages(_ imagesJson: [JSON], projectPath: URL) -> [String] {
+        guard let sourceImage = loadedImageView.image else {
+            showWarning(message: "No Source Image", info: "There is no valid source image. Please select a valid image file (PNG, JPG).")
+            return []
+        }
+
         var imageNames = [String]()
         let savePath = projectPath.appendingPathComponent(kAIIconAssetsPathComponents["directory"]!)
         for image in imagesJson {
             if let theSize = Scaler.dimensionsFromWxHString(image["size"].stringValue, scale: image["scale"].doubleValue) {
-                let scaledImage = Scaler.imageCIScale(self.largeImage, dimension: theSize.height)
+                let scaledImage = Scaler.imageCIScale(sourceImage, dimension: theSize.height)
                 let imageName = String(format: "AppIcon%@-%@.png", image["size"].stringValue, image["scale"].stringValue)
                 self.saveAsPNG(scaledImage, name: savePath.appendingPathComponent(imageName))
                 imageNames.append(imageName)
             }
         }
-        
+
         return imageNames
     }
-    
+
     /**
      Save image as a PNG file
      
@@ -267,7 +274,7 @@ class IconsViewController: NSViewController {
             }
         }
     }
-    
+
     func showWarning(message: String, info: String) {
         let alert = NSAlert()
         alert.messageText = message
@@ -280,24 +287,26 @@ class IconsViewController: NSViewController {
     func getAppDelegate() -> AppDelegate? {
         return NSApplication.shared.delegate as? AppDelegate
     }
-    
+
     @IBAction func saveButtonClicked(_ sender: Any) {
         saveIconFiles()
     }
-    
-    @IBAction func largeImageViewAction(_ sender: DragNDropImageView) {
-        guard let theImage = sender.image else {
+
+    // This only runs for DnD
+    @IBAction func loadedImageViewAction(_ sender: DragNDropImageView) {
+        guard let _ = sender.image else {
+            showWarning(message: "Not an Image", info: "Dropped file does not appear to be an acceptable image format (PNG, JPG)")
+            loadedImageView.image = NSImage(named: "Large")
             os_log("Drag and Drop operation failed. No accessible image in ImageView")
             return
         }
-        
-        largeImage = theImage
-        setupInfoView(name: sender.imageFileName, size: theImage.size)
+
+        sourceImageFilename = sender.imageFileName
+        setupInfoView()
     }
     
     @IBAction func closeInfoViewClicked(_ sender: Any) {
         infoView.isHidden = true
     }
-    
 }
 

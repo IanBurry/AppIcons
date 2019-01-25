@@ -22,10 +22,10 @@ class Scaler {
         guard let w = dimensions.first!, let h = dimensions.last! else {
             return nil
         }
-        
+
         return CGSize(width: w, height: h)
     }
-    
+
     /**
      dimensionsFromWxHString
 
@@ -42,10 +42,10 @@ class Scaler {
             os_log("Cannot extract dimensions from string: %@", sizeString)
             return nil
         }
-        
+
         return (width: w * scale, height: h * scale)
     }
-    
+
     /**
       imageCIScale
  
@@ -61,12 +61,12 @@ class Scaler {
             os_log("Could not set up Core Image with provided data at: %@ line: %@", #function, #line)
             return nil
         }
-        
+
         let scaleFactor = CGFloat(dimension) / image.size.height
         filter.setValue(ciImage, forKey: kCIInputImageKey)
         filter.setValue(scaleFactor, forKey: kCIInputScaleKey)
         filter.setValue(1.0, forKey: kCIInputAspectRatioKey)
-        
+
         let context = CIContext()
         guard let outputImage = filter.outputImage,
               let scaledImage = context.createCGImage(outputImage, from: outputImage.extent)
@@ -74,7 +74,7 @@ class Scaler {
             os_log("Could not create scaled CG Image at: %@ line: %@", #function, #line)
             return nil
         }
-        
+
         return NSImage(cgImage: scaledImage, size: NSZeroSize)
     }
 
@@ -92,12 +92,18 @@ class Scaler {
             let filter = CIFilter(name: "CICrop"),
             let ciImage = CIImage(data: data)
         else {
-            os_log("Could not set up Core Image with provided args. Function: %@, line: %@", #function, #line)
+            os_log("imageCICrop: Could not set up Core Image with provided args.")
             return nil
         }
 
-        let cropDimension = image.size.width < image.size.height ? image.size.width : image.size.height
-        let cropRect = CIVector(x: 0, y: 0, z: cropDimension, w: cropDimension) // this needs moar work
+        let width = image.size.width, height = image.size.height
+        let offset = abs(0.5 * (width - height))
+
+        let cropDimension = width < height ? width : height
+        let xOffset = width > height ? offset : 0.0
+        let yOffset = height > width ? offset : 0.0
+
+        let cropRect = CIVector(x: xOffset, y: yOffset, z: cropDimension, w: cropDimension) // this needs moar work
         filter.setValue(ciImage, forKey: kCIInputImageKey)
         filter.setValue(cropRect, forKey: "inputRectangle")
 
@@ -120,7 +126,7 @@ class Scaler {
      */
     class func imageCGScale(_ image: NSImage, width: Int, height: Int) -> NSImage? {
         var imageRect = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
-        
+
         if let imageCG = image.cgImage(forProposedRect: &imageRect, context: nil, hints: nil) {
             if let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: imageCG.bitsPerComponent, bytesPerRow: imageCG.bytesPerRow, space: imageCG.colorSpace!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) {
                 
@@ -132,14 +138,14 @@ class Scaler {
                 let nsScaledImage = cgScaledImage.flatMap {
                     NSImage(cgImage: $0, size: NSSize(width: context.width, height: context.height))
                 }
-                
+
                 return nsScaledImage
             }
         }
-        
+
         return nil
     }
-    
+
     /**
       imageIOScale
 
@@ -149,16 +155,16 @@ class Scaler {
     class func imageIOScale(_ image: NSImage, dimension: Int) -> NSImage? {
         let data = image.tiffRepresentation // don't want to do this more than once. TIFF large
         let imageSrc = CGImageSourceCreateWithData(data! as CFData, nil)
-        
+
         let options = [
             kCGImageSourceThumbnailMaxPixelSize: dimension,
             kCGImageSourceCreateThumbnailFromImageAlways: true
             ] as CFDictionary
-        
+
         let scaledImage = CGImageSourceCreateThumbnailAtIndex(imageSrc!, 0, options).flatMap {
             NSImage(cgImage: $0, size: NSSize(width: dimension, height: dimension))
         }
-        
+
         return scaledImage
     }
 }
