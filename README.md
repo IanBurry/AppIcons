@@ -9,8 +9,14 @@ See changelog: https://github.com/IanBurry/AppIcons/wiki#change-log
 * Open the workspace from XCode. Use it instead of the project file
 * Build and run
 
+## Features
+* Icon creation and installation for Mac OS and IOS xcode projects/workspaces
+* Image resizing and cropping using Core Image: https://developer.apple.com/documentation/coreimage
+* Drag n drop
+
 ## Known Issues
-* Allows non-square source images.
+* N/A 
 
 ## TODO
-* Disallow or crop non-square source images
+* A more transparent installation process
+* A fair amount of refactoring
