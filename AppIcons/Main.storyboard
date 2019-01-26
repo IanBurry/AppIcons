@@ -420,7 +420,7 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="loadedImageViewAction:" target="XfG-lQ-9wD" id="uM4-Qc-FsM"/>
+                                    <action selector="saveButtonClicked:" target="XfG-lQ-9wD" id="9cv-P3-IPk"/>
                                 </connections>
                             </button>
                             <imageView canDrawConcurrently="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="no5-Fe-Lu3" customClass="DragNDropImageView" customModule="AppIcons" customModuleProvider="target">

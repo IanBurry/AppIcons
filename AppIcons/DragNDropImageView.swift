@@ -31,6 +31,7 @@ class DragNDropImageView: NSImageView {
     
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         let pasteBoard = sender.draggingPasteboard
+
         if pasteBoard.canReadObject(forClasses: [NSURL.self], options: fileFilterOptions) {
             isDragging = true
             dragValidationColor = NSColor.selectedControlColor

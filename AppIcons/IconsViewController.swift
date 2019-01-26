@@ -94,15 +94,10 @@ class IconsViewController: NSViewController {
                     self.scaleButton.isEnabled = false
                 }
 
-                if let croppedImage = self.loadedImageView.image {
-                    self.setupInfoView()
-                }
-            }
-        } else {
-            if let loadedImage = self.loadedImageView.image {
                 self.setupInfoView()
             }
-
+        } else {
+            self.setupInfoView()
             self.scaleButton.isEnabled = true
         }
     }
@@ -294,13 +289,14 @@ class IconsViewController: NSViewController {
 
     // This only runs for DnD
     @IBAction func loadedImageViewAction(_ sender: DragNDropImageView) {
-        guard let _ = sender.image else {
+        guard let theImage = sender.image else {
             showWarning(message: "Not an Image", info: "Dropped file does not appear to be an acceptable image format (PNG, JPG)")
             loadedImageView.image = NSImage(named: "Large")
             os_log("Drag and Drop operation failed. No accessible image in ImageView")
             return
         }
 
+        checkImage(theImage)
         sourceImageFilename = sender.imageFileName
         setupInfoView()
     }
